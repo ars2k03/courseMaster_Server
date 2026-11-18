@@ -17,15 +17,21 @@ const submitAssignment = async (studentId, payload) => {
     throw new Error("Assignment already submitted for this lesson");
   }
 
-  const submission = await AssignmentSubmission.create({
-    student: studentId,
-    course: courseId,
-    lessonId,
-    answerType,
-    answer,
-  });
-
-  return submission;
+  try {
+    const submission = await AssignmentSubmission.create({
+      student: studentId,
+      course: courseId,
+      lessonId,
+      answerType,
+      answer,
+    });
+    return submission;
+  } catch (err) {
+    if (err && err.code === 11000) {
+      throw new Error("Assignment already submitted for this lesson");
+    }
+    throw err;
+  }
 };
 
 const getMySubmissions = async (studentId, courseId = null) => {

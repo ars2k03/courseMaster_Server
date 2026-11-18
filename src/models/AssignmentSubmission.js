@@ -18,4 +18,9 @@ const assignmentSubmissionSchema = new Schema(
   { timestamps: true }
 );
 
+assignmentSubmissionSchema.index(
+  { student: 1, course: 1, lessonId: 1 },
+  { unique: true }
+);
+
 module.exports = model("AssignmentSubmission", assignmentSubmissionSchema);

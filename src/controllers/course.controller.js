@@ -5,7 +5,6 @@ const connectDB = require("../config/db");
 
 const getCourses = async (req, res) => {
   try {
-    // Ensure DB connection before processing request (for serverless)
     await connectDB();
     const data = await courseService.getCourses(req.query);
     res.json(data);
@@ -17,7 +16,8 @@ const getCourses = async (req, res) => {
 
 const getCourseById = async (req, res) => {
   try {
-    const course = await courseService.getCourseById(req.params.id);
+    await connectDB();
+    const course = await courseService.getCourseById(req.params.id, req.user || null);
     res.json(course);
   } catch (err) {
     res.status(404).json({ message: err.message });

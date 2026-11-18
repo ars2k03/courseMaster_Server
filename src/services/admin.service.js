@@ -10,8 +10,29 @@ const createCourse = async (payload) => {
   return course;
 };
 
+const ALLOWED_COURSE_FIELDS = [
+  "title",
+  "description",
+  "instructorName",
+  "price",
+  "category",
+  "tags",
+  "syllabus",
+  "batches",
+];
+
 const updateCourse = async (id, payload) => {
-  const course = await Course.findByIdAndUpdate(id, payload, { new: true });
+  const safePayload = {};
+  for (const key of ALLOWED_COURSE_FIELDS) {
+    if (Object.prototype.hasOwnProperty.call(payload, key)) {
+      safePayload[key] = payload[key];
+    }
+  }
+
+  const course = await Course.findByIdAndUpdate(id, safePayload, {
+    new: true,
+    runValidators: true,
+  });
   if (!course) throw new Error("Course not found");
   return course;
 };
@@ -77,9 +98,20 @@ const reviewAssignment = async (id, payload, adminId) => {
   const { reviewNotes, grade, status } = payload;
 
   const update = {};
-  if (typeof status !== "undefined") update.status = status;
+  if (typeof status !== "undefined") {
+    if (!["submitted", "reviewed"].includes(status)) {
+      throw new Error("Invalid assignment status");
+    }
+    update.status = status;
+  }
   if (typeof reviewNotes !== "undefined") update.reviewNotes = reviewNotes;
-  if (typeof grade !== "undefined") update.grade = grade;
+  if (typeof grade !== "undefined") {
+    const num = Number(grade);
+    if (Number.isNaN(num) || num < 0 || num > 100) {
+      throw new Error("Grade must be a number between 0 and 100");
+    }
+    update.grade = num;
+  }
   if (adminId) update.reviewer = adminId;
 
   const submission = await AssignmentSubmission.findByIdAndUpdate(id, update, { new: true })
