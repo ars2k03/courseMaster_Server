@@ -50,6 +50,10 @@ const login = async ({ email, password }) => {
   const match = await bcrypt.compare(password, user.passwordHash);
   if (!match) throw new Error("Invalid email or password");
 
+  if (user.isBanned) {
+    throw new Error("Your account has been banned");
+  }
+
   const token = generateToken({ id: user._id, role: user.role });
 
   return {
@@ -61,6 +65,7 @@ const login = async ({ email, password }) => {
 const getMe = async (userId) => {
   const user = await User.findById(userId).select("-passwordHash");
   if (!user) throw new Error("User not found");
+  if (user.isBanned) throw new Error("Your account has been banned");
   return user;
 };
 

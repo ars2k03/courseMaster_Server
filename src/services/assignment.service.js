@@ -8,6 +8,15 @@ const submitAssignment = async (studentId, payload) => {
   const enrolled = await Enrollment.findOne({ student: studentId, course: courseId });
   if (!enrolled) throw new Error("You are not enrolled in this course");
 
+  const existing = await AssignmentSubmission.findOne({
+    student: studentId,
+    course: courseId,
+    lessonId,
+  });
+  if (existing) {
+    throw new Error("Assignment already submitted for this lesson");
+  }
+
   const submission = await AssignmentSubmission.create({
     student: studentId,
     course: courseId,

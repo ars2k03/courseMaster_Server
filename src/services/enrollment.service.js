@@ -32,9 +32,13 @@ const getMyEnrollments = async (studentId) => {
     .sort({ createdAt: -1 });
 };
 
-const completeLesson = async (enrollId, lessonId) => {
+const completeLesson = async (enrollId, lessonId, studentId = null) => {
   const enrollment = await Enrollment.findById(enrollId);
   if (!enrollment) throw new Error("Enrollment not found");
+
+  if (studentId && String(enrollment.student) !== String(studentId)) {
+    throw new Error("Not authorized to update this enrollment");
+  }
 
   // avoid duplicates
   const alreadyDone = enrollment.progress.completedLessons

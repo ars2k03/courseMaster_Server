@@ -26,11 +26,13 @@ const completeLesson = async (req, res) => {
   try {
     const data = await enrollmentService.completeLesson(
       req.params.enrollId,
-      req.body.lessonId
+      req.body.lessonId,
+      req.user.id
     );
     res.json(data);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    const status = err.message.includes("Not authorized") ? 403 : 400;
+    res.status(status).json({ message: err.message });
   }
 };
 
